@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "601671291164",
+    "project_id": "shakticare-138a5",
+    "storage_bucket": "shakticare-138a5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601671291164:android:43c2151c584f3628822ad9",
+        "android_client_info": {
+          "package_name": "com.ShaktiCare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzko3JCB8NBaMpPrcxPVpLWTPcjZxYU3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601671291164:android:44109ec39662b8a6822ad9",
+        "android_client_info": {
+          "package_name": "com.shakticare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzko3JCB8NBaMpPrcxPVpLWTPcjZxYU3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

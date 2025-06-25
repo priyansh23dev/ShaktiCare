@@ -1,0 +1,49 @@
+ShaktiCare/
+│
+├── android/                    # Android native files
+├── ios/                        # iOS native files
+├── assets/                     # Fonts, images, icons
+│   └── images/
+│
+├── src/
+│   ├── api/                    # Firebase configs and API helpers
+│   │   └── firebaseConfig.js
+│
+│   ├── auth/                   # Authentication logic
+│   │   ├── LoginScreen.js
+│   │   ├── RegisterScreen.js
+│   │   └── RoleSelectorScreen.js
+│
+│   ├── components/             # Reusable UI components
+│   │   └── CustomButton.js
+│
+│   ├── constants/              # Constants like colors, strings
+│   │   └── colors.js
+│
+│   ├── navigation/             # React Navigation stack setup
+│   │   ├── AppNavigator.js
+│   │   └── RoleBasedNavigator.js
+│
+│   ├── screens/                # Main UI screens grouped by role
+│   │   ├── Donor/
+│   │   │   └── DonorHome.js
+│   │   ├── Victim/
+│   │   │   └── VictimHome.js
+│   │   ├── NGO/
+│   │   │   └── NGOHome.js
+│   │   └── Consultant/
+│       │   └── ConsultantHome.js
+│
+│   ├── store/                  # Redux or Context (optional)
+│   │   ├── index.js
+│   │   └── userSlice.js
+│
+│   ├── utils/                  # Helper functions
+│   │   └── validations.js
+│
+│   └── App.js                  # Root component
+│
+├── .gitignore
+├── app.json
+├── package.json
+└── README.md
