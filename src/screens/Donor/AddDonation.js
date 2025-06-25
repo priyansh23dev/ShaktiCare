@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function AddDonation({ route, navigation }) {
   const { recipientId, recipientName, recipientRole } = route.params;
@@ -42,57 +54,96 @@ export default function AddDonation({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Donate to {recipientName}</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Amount (₹)"
-        keyboardType="numeric"
-        value={amount}
-        onChangeText={setAmount}
-      />
-
-      <TextInput
-        style={[styles.input, { height: 100 }]}
-        placeholder="Message (optional)"
-        multiline
-        value={message}
-        onChangeText={setMessage}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && { opacity: 0.7 }]}
-        onPress={handleDonate}
-        disabled={loading}
+    <LinearGradient colors={['#6C63FF', '#A084DC']} style={styles.gradient}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Donate</Text>
-        )}
-      </TouchableOpacity>
-    </View>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.header}>Donate to {recipientName}</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Amount (₹)"
+            placeholderTextColor="#b0aee6"
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={setAmount}
+          />
+
+          <TextInput
+            style={[styles.input, styles.messageInput]}
+            placeholder="Message (optional)"
+            placeholderTextColor="#b0aee6"
+            multiline
+            value={message}
+            onChangeText={setMessage}
+          />
+
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleDonate}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Donate</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 30, color: '#6C63FF', textAlign: 'center' },
+  gradient: {
+    flex: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  container: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    fontFamily: 'Montserrat-Bold',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
   input: {
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginBottom: 25,
     fontSize: 16,
+    color: '#fff',
+    fontFamily: 'Montserrat-Regular',
+  },
+  messageInput: {
+    height: 120,
+    textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#6C63FF',
-    padding: 15,
+    backgroundColor: '#fff',
     borderRadius: 30,
+    paddingVertical: 15,
     alignItems: 'center',
+    shadowColor: '#3f3f7f',
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
+  buttonText: {
+    color: '#6C63FF',
+    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+  },
 });

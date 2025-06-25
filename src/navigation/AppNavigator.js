@@ -14,6 +14,7 @@ import DonorTabs from '../screens/Donor/DonorTabs';
 import VictimTabs from '../screens/Victim/VictimTabs';
 import ConsultantTabs from '../screens/Consultant/ConsultantTabs';
 import NGOTabs from '../screens/NGO/NGOTabs';
+import AddResource from '../screens/NGO/AddResource';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,12 +23,13 @@ export default function AppNavigator() {
     <Stack.Navigator initialRouteName="Login">
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignupScreen} options={{ title: 'Create Account' }} />
+      <Stack.Screen name="AddResource" component={AddResource} options={{ headerShown: false }} />
 
       <Stack.Screen name="DonorHome" component={DonorTabs} options={{ headerShown: false }} />
       <Stack.Screen name="NGOHome" component={NGOTabs} options={{ headerShown: false }} />
       <Stack.Screen name="AddDonation" component={AddDonation} options={{ title: 'Add Donation' }} />
-<Stack.Screen name="DonationHistory" component={DonationHistory} options={{ title: 'Donation History' }} />
-<Stack.Screen name="VictimHome" component={VictimTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="DonationHistory" component={DonationHistory} options={{ title: 'Donation History' }} />
+      <Stack.Screen name="VictimHome" component={VictimTabs} options={{ headerShown: false }} />
       <Stack.Screen name="ConsultantHome" component={ConsultantTabs} options={{ headerBackVisible: false, title: 'Consultant Dashboard' }} />
     </Stack.Navigator>
   );

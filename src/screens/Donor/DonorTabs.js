@@ -15,7 +15,7 @@ export default function DonorTabs() {
           let iconName;
           if (route.name === 'Donate') iconName = 'cash-outline';
           else if (route.name === 'History') iconName = 'receipt-outline';
-          else if (route.name === 'Profile') iconName = 'person-outline';
+          else if (route.name === 'DonorProfile') iconName = 'person-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#6C63FF',

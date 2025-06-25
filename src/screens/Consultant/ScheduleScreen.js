@@ -1,77 +1,124 @@
-// src/screens/Consultant/ScheduleScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import Icon from 'react-native-vector-icons/Ionicons';
+import moment from 'moment';
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function ScheduleScreen() {
-  const [schedules, setSchedules] = useState([]);
+  const [scheduledRequests, setScheduledRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userId = auth().currentUser.uid;
+  const currentUser = auth().currentUser;
 
   useEffect(() => {
+    if (!currentUser) {
+      Alert.alert('Error', 'No authenticated user found');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = firestore()
-      .collection('consultations')
-      .where('consultantId', '==', userId)
+      .collection('helpRequests')
+      .where('assignedConsultant', '==', currentUser.uid)
+      .where('status', '==', 'Accepted')
       .orderBy('scheduledAt', 'asc')
-      .onSnapshot(querySnapshot => {
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSchedules(data);
-        setLoading(false);
-      }, error => {
-        console.error(error);
-        setLoading(false);
-      });
+      .onSnapshot(
+        snapshot => {
+          const requests = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setScheduledRequests(requests);
+          setLoading(false);
+        },
+        error => {
+          console.error('Firestore Error:', error);
+          Alert.alert('Error', 'Failed to load scheduled requests');
+          setLoading(false);
+        }
+      );
 
     return () => unsubscribe();
-  }, [userId]);
-
-  const renderItem = ({ item }) => {
-    const date = item.scheduledAt?.toDate?.().toLocaleString() || 'N/A';
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Icon name="calendar-outline" size={24} color="#6C63FF" />
-          <Text style={styles.title}>Consultation with Victim</Text>
-        </View>
-        <Text style={styles.details}>Date & Time: {date}</Text>
-        <Text style={styles.details}>Request Type: {item.requestType}</Text>
-        <Text style={styles.details}>Notes: {item.notes || 'None'}</Text>
-      </View>
-    );
-  };
-
-  if (loading) return <ActivityIndicator size="large" color="#6C63FF" style={styles.loading} />;
+  }, [currentUser]);
 
   return (
-    <View style={styles.container}>
-      {schedules.length === 0 ? (
-        <Text style={styles.emptyText}>No consultations scheduled.</Text>
+    <LinearGradient
+      colors={['#6C63FF', '#3B33A1']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <Text style={styles.header}>My Schedule</Text>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#fff" style={{ marginTop: 30 }} />
+      ) : scheduledRequests.length === 0 ? (
+        <Text style={styles.empty}>No scheduled help requests.</Text>
       ) : (
-        <FlatList
-          data={schedules}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+          {scheduledRequests.map(req => (
+            <View key={req.id} style={styles.card}>
+              <Text style={styles.cardTitle}>{req.uname || 'Unnamed Victim'}</Text>
+              <Text style={styles.cardSubtitle}>Type: {req.requestType}</Text>
+              <Text style={styles.cardSubtitle}>
+                Scheduled: {req.scheduledAt ? moment(req.scheduledAt.toDate()).format('MMM Do YYYY, h:mm A') : 'Not set'}
+              </Text>
+              <Text style={styles.cardSubtitle}>
+                Contact: {req.victimPhone || 'N/A'}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  card: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    elevation: 2,
+  container: { flex: 1, padding: 20 },
+  header: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 25,
+    fontFamily: 'Montserrat-Bold',
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  title: { fontWeight: 'bold', fontSize: 18, marginLeft: 8, color: '#333' },
-  details: { color: '#555', marginBottom: 6 },
-  loading: { flex: 1, justifyContent: 'center' },
-  emptyText: { textAlign: 'center', marginTop: 40, color: '#999', fontSize: 16 },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#fff',
+    fontFamily: 'Montserrat-SemiBold',
+  },
+  cardSubtitle: {
+    fontSize: 16,
+    color: '#e0e0e0',
+    marginBottom: 8,
+    fontFamily: 'Montserrat-Regular',
+  },
+  empty: {
+    color: '#ccc',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 60,
+    fontFamily: 'Montserrat-Medium',
+  },
 });

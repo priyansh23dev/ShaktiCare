@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
+
+const { width } = Dimensions.get('window');
 
 export default function DonationHistory() {
   const [donations, setDonations] = useState([]);
@@ -14,14 +24,24 @@ export default function DonationHistory() {
       .collection('donations')
       .where('donorId', '==', donorId)
       .orderBy('createdAt', 'desc')
-      .onSnapshot(snapshot => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setDonations(data);
-        setLoading(false);
-      }, error => {
-        console.error(error);
-        setLoading(false);
-      });
+      .onSnapshot(
+        (snapshot) => {
+          if (snapshot.empty) {
+            console.log('No donations found for donor:', donorId);
+          }
+          const data = snapshot.docs.map((doc) => {
+            const docData = doc.data();
+            console.log('Donation doc:', doc.id, docData);
+            return { id: doc.id, ...docData };
+          });
+          setDonations(data);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error fetching donations:', error);
+          setLoading(false);
+        }
+      );
 
     return () => unsubscribe();
   }, [donorId]);
@@ -31,24 +51,30 @@ export default function DonationHistory() {
       <View style={styles.cardHeader}>
         <Icon
           name={item.recipientRole === 'NGO' ? 'business-outline' : 'person-outline'}
-          size={24}
-          color="#6C63FF"
+          size={28}
+          color="#fff"
         />
-        <Text style={styles.recipientName}>{item.recipientName || 'Recipient'}</Text>
+        <Text style={styles.recipientName}>{item.recipientName || item.recipientRole || 'Recipient'}</Text>
       </View>
-      <Text style={styles.amount}>₹ {item.amount.toFixed(2)}</Text>
+      <Text style={styles.amount}>₹ {item.amount?.toFixed(2)}</Text>
       {item.message ? <Text style={styles.message}>"{item.message}"</Text> : null}
       <Text style={styles.date}>
-        {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleString() : ''}
+        {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleString() : 'Date not available'}
       </Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#6C63FF', '#3B33A1']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <Text style={styles.header}>Your Donations</Text>
+
       {loading ? (
-        <ActivityIndicator size="large" color="#6C63FF" />
+        <ActivityIndicator size="large" color="#fff" style={{ marginTop: 30 }} />
       ) : donations.length === 0 ? (
         <Text style={styles.emptyText}>You haven't made any donations yet.</Text>
       ) : (
@@ -57,26 +83,75 @@ export default function DonationHistory() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={donations.length === 0 && styles.emptyContainer}
+          showsVerticalScrollIndicator={false}
+          style={{ width: '100%' }}
         />
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#6C63FF', textAlign: 'center' },
-  card: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    alignItems: 'center',
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  recipientName: { marginLeft: 8, fontWeight: 'bold', fontSize: 16, color: '#333' },
-  amount: { fontSize: 18, fontWeight: 'bold', color: '#4CAF50' },
-  message: { fontStyle: 'italic', color: '#555', marginTop: 5 },
-  date: { color: '#999', marginTop: 8, fontSize: 12 },
+  header: {
+    fontSize: 28,
+
+    color: '#fff',
+    marginBottom: 25,
+    fontFamily: 'System',
+    fontFamily: 'Montserrat-Bold',
+  },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 18,
+    width: width - 40,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  recipientName: {
+    marginLeft: 12,
+    fontSize: 20,
+    color: '#fff',
+    letterSpacing: 0.3,
+    fontFamily: 'Montserrat-Bold',
+  },
+  amount: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#9AFF99',
+    marginBottom: 8,
+  },
+  message: {
+    fontStyle: 'italic',
+    color: '#E6E6E6',
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  date: {
+    color: '#D1D1D1',
+    fontSize: 13,
+    textAlign: 'right',
+  },
   emptyContainer: { flexGrow: 1, justifyContent: 'center' },
-  emptyText: { textAlign: 'center', fontSize: 16, color: '#999' },
+  emptyText: {
+    color: '#E0E0E0',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 40,
+    fontStyle: 'italic',
+  },
 });

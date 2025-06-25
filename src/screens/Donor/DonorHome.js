@@ -1,8 +1,16 @@
+// src/screens/Donor/DonorHome.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function DonorHome({ navigation }) {
   const [showNGOs, setShowNGOs] = useState(true);
@@ -40,10 +48,16 @@ export default function DonorHome({ navigation }) {
   const renderUserItem = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.name}>{item.name || 'Unnamed'}</Text>
-      <Text style={styles.email}>{item.email}</Text>
+      <Text style={styles.email}>{item.email || 'No email provided'}</Text>
       <TouchableOpacity
         style={styles.donateButton}
-        onPress={() => navigation.navigate('AddDonation', { recipientId: item.id, recipientName: item.name, recipientRole: item.role })}
+        onPress={() =>
+          navigation.navigate('AddDonation', {
+            recipientId: item.id,
+            recipientName: item.name,
+            recipientRole: item.role,
+          })
+        }
       >
         <Text style={styles.donateButtonText}>Donate</Text>
       </TouchableOpacity>
@@ -51,70 +65,127 @@ export default function DonorHome({ navigation }) {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Welcome, Donor</Text>
+    <LinearGradient colors={['#6C63FF', '#A084DC']} style={styles.gradient}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Welcome, Donor</Text>
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, showNGOs && styles.activeTab]}
-          onPress={() => setShowNGOs(true)}
-        >
-          <Text style={[styles.tabText, showNGOs && styles.activeTabText]}>NGOs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, !showNGOs && styles.activeTab]}
-          onPress={() => setShowNGOs(false)}
-        >
-          <Text style={[styles.tabText, !showNGOs && styles.activeTabText]}>Victims</Text>
-        </TouchableOpacity>
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, showNGOs && styles.activeTab]}
+            onPress={() => setShowNGOs(true)}
+          >
+            <Text style={[styles.tabText, showNGOs && styles.activeTabText]}>NGOs</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, !showNGOs && styles.activeTab]}
+            onPress={() => setShowNGOs(false)}
+          >
+            <Text style={[styles.tabText, !showNGOs && styles.activeTabText]}>Victims</Text>
+          </TouchableOpacity>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#fff" style={{ marginTop: 50 }} />
+        ) : (
+          <FlatList
+            data={showNGOs ? ngoList : victimList}
+            keyExtractor={(item) => item.id}
+            renderItem={renderUserItem}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No {showNGOs ? 'NGOs' : 'Victims'} found.</Text>
+            }
+            contentContainerStyle={(showNGOs ? ngoList : victimList).length === 0 && styles.emptyContainer}
+          />
+        )}
       </View>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#6C63FF" />
-      ) : (
-        <FlatList
-          data={showNGOs ? ngoList : victimList}
-          keyExtractor={(item) => item.id}
-          renderItem={renderUserItem}
-          ListEmptyComponent={<Text style={styles.emptyText}>No {showNGOs ? 'NGOs' : 'Victims'} found.</Text>}
-          contentContainerStyle={(showNGOs ? ngoList : victimList).length === 0 && styles.emptyContainer}
-        />
-      )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: 'bold', color: '#6C63FF', marginBottom: 20 },
-  tabContainer: { flexDirection: 'row', marginBottom: 20 },
+  gradient: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+  },
+  header: {
+    fontSize: 28,
+    // fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 25,
+    fontFamily: 'Montserrat-Bold',
+    textAlign: 'center',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 25,
+    justifyContent: 'center',
+  },
   tab: {
     flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#eee',
+    paddingVertical: 14,
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 30,
-    marginHorizontal: 5,
+    marginHorizontal: 8,
     alignItems: 'center',
   },
-  activeTab: { backgroundColor: '#6C63FF' },
-  tabText: { color: '#555', fontWeight: 'bold', fontSize: 16 },
-  activeTabText: { color: '#fff' },
+  activeTab: {
+    backgroundColor: '#fff',
+  },
+  tabText: {
+    color: '#eee',
+    fontWeight: '600',
+    fontSize: 18,
+    fontFamily: 'Montserrat-Medium',
+  },
+  activeTabText: {
+    color: '#6C63FF',
+  },
   card: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 18,
+    shadowColor: '#6C63FF',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  name: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  email: { color: '#555', marginVertical: 5 },
+  name: {
+    fontSize: 20,
+    fontFamily: 'Montserrat-Bold',
+    color: '#333',
+  },
+  email: {
+    fontSize: 14,
+    color: '#666',
+    marginVertical: 8,
+    fontFamily: 'Montserrat-Regular',
+  },
   donateButton: {
-    marginTop: 10,
+    marginTop: 12,
     backgroundColor: '#6C63FF',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 30,
     alignItems: 'center',
   },
-  donateButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  emptyContainer: { flexGrow: 1, justifyContent: 'center' },
-  emptyText: { textAlign: 'center', fontSize: 16, color: '#999' },
+  donateButtonText: {
+    color: '#fff',
+    // fontWeight: '700',
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+  },
+  emptyContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#ddd',
+    fontFamily: 'Montserrat-Regular',
+  },
 });

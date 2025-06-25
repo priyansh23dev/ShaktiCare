@@ -1,5 +1,5 @@
 // src/screens/Victim/AddRequest.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -27,7 +27,32 @@ export default function AddRequest({ navigation }) {
     { label: 'Financial', value: 'Financial' },
     { label: 'Medical', value: 'Medical' },
     { label: 'Consultation', value: 'Consultation' },
+    { label: 'Domestic Violence', value: 'Domestic Violence' },
+    { label: 'Legal Aid', value: 'Legal Aid' },
+    { label: 'Psychological Support', value: 'Psychological Support' },
+    { label: 'Shelter Request', value: 'Shelter Request' },
+    { label: 'Emergency Assistance', value: 'Emergency Assistance' },
+    { label: 'Childcare Support', value: 'Childcare Support' },
   ]);
+  
+  const [userData, setUserData] = useState(null);
+ 
+  const uid = auth().currentUser.uid;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const doc = await firestore().collection('users').doc(uid).get();
+        if (doc.exists) setUserData(doc.data());
+      } catch (error) {
+        Alert.alert('Error', 'Failed to fetch profile data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [uid]);
 
   const handleSubmit = async () => {
     if (!requestType || !description.trim()) {
@@ -38,13 +63,18 @@ export default function AddRequest({ navigation }) {
     setLoading(true);
 
     try {
+
+      console.log(userData?.name)
       const uid = auth().currentUser.uid;
+
+
 
       await firestore().collection('helpRequests').add({
         victimId: uid,
         requestType,
         description: description.trim(),
         status: 'Pending',
+        uname:userData?.name,
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
